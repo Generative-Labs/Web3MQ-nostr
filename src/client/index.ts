@@ -5,6 +5,7 @@ import { Message } from '../message';
 import { User } from '../user';
 import { Contact } from '../contact';
 import { Notify } from '../notify';
+import { Nostr } from 'nostrClient';
 import { Topic } from '../topic';
 import { Storage } from '../storage';
 import { Request } from '../core/request';
@@ -27,6 +28,7 @@ export class Client {
   static register: Register;
   static signClient: SignConnect;
   static dappConnectClient: DappConnect;
+  static nostrClient: Nostr;
   keys: ClientKeyPaires;
   channel: Channel;
   listeners: event;
@@ -56,11 +58,18 @@ export class Client {
       connectUrl: null,
     },
   ) => {
-    const { connectUrl, app_key, env, tempPubkey, didKey } = initOptions;
+    const { connectUrl, app_key, env, tempPubkey, didKey, nostrRelays, nostrAuther } = initOptions;
     const fastUrl = connectUrl || (await getFastestUrl(env));
     Client.wsUrl = selectUrl(fastUrl, 'ws');
     new Request(selectUrl(fastUrl), tempPubkey, didKey);
     Client.register = new Register(app_key);
+    if (nostrRelays && nostrAuther) {
+      Client.nostrClient = new Nostr({
+        appKey: app_key || '',
+        auther: nostrAuther,
+        relays: nostrRelays,
+      });
+    }
     return fastUrl;
   };
 

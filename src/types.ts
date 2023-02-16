@@ -18,6 +18,20 @@ export type Web3MQDBValuePayload = {
 
 export type DappConnectSignParams = { signContent: string; didValue: string; signType: string };
 
+export type NostrOptions = {
+  appKey: string;
+  relays: Array<string>;
+  auther: string;
+};
+
+export type NostrKeyPairsType = Omit<KeyPairsType, 'userid'>;
+
+export type GetMainKeypairByNostrParams = {
+  password: string;
+  privateKey: string;
+  did_value: string;
+}
+
 export type Web3MQDBValue = {
   messageId: string;
   from: string;
@@ -98,6 +112,8 @@ export type InitOptions = {
   env?: EnvTypes;
   tempPubkey?: string;
   didKey?: string;
+  nostrRelays?: Array<string>;
+  nostrAuther?: string;
 };
 
 export type SignClientCallBackType = {
