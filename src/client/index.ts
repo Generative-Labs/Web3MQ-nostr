@@ -58,15 +58,14 @@ export class Client {
       connectUrl: null,
     },
   ) => {
-    const { connectUrl, app_key, env, tempPubkey, didKey, nostrRelays, nostrAuther } = initOptions;
+    const { connectUrl, app_key, env, tempPubkey, didKey, nostrRelays } = initOptions;
     const fastUrl = connectUrl || (await getFastestUrl(env));
     Client.wsUrl = selectUrl(fastUrl, 'ws');
     new Request(selectUrl(fastUrl), tempPubkey, didKey);
     Client.register = new Register(app_key);
-    if (nostrRelays && nostrAuther) {
+    if (nostrRelays) {
       Client.nostrClient = new Nostr({
         appKey: app_key || '',
-        auther: nostrAuther,
         relays: nostrRelays,
       });
     }

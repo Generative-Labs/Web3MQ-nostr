@@ -1,5 +1,4 @@
 import { EVENT_MAP } from './core/events';
-
 export type EventTypes = 'all' | keyof typeof EVENT_MAP;
 
 export type ServiceResponse = {
@@ -21,7 +20,6 @@ export type DappConnectSignParams = { signContent: string; didValue: string; sig
 export type NostrOptions = {
   appKey: string;
   relays: Array<string>;
-  auther: string;
 };
 
 export type NostrKeyPairsType = Omit<KeyPairsType, 'userid'>;
@@ -113,7 +111,6 @@ export type InitOptions = {
   tempPubkey?: string;
   didKey?: string;
   nostrRelays?: Array<string>;
-  nostrAuther?: string;
 };
 
 export type SignClientCallBackType = {
@@ -567,6 +564,7 @@ export const WalletNameMap = {
   eth: 'Ethereum',
   starknet: 'Argent X',
   qrcode: 'Qrcode',
+  nostr: 'Nostr',
 };
 
 export const SendMsgLoadingMap = {

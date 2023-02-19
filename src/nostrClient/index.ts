@@ -1,62 +1,76 @@
 import Web3 from 'web3';
 import noble from 'noble-secp256k1';
+import { SimplePool, Event, getEventHash, signEvent, nip04 } from 'nostr-tools';
 import { Client } from '../client';
 import { 
   GetMainKeypairByNostrParams, 
   GetRegisterSignContentParams,
   LoginByKeysParams,
   NostrOptions, 
-  NostrKeyPairsType, 
   RegisterBySignParams 
 } from '../types';
 
 import { ByteArrayToHexString } from '../utils';
 
 export class Nostr {
+  private web3: Web3;
   relays: Array<string>;
-  auther: string;
   appKey: string;
-  web3: Web3;
+  relayPool: any | null;
 
   constructor(options: NostrOptions) {
-    this.auther = options.auther;
     this.appKey = options.appKey;
     this.relays = options.relays;
     this.web3 = new Web3(Web3.givenProvider);
-    this.init();
+    
+    this.init(options.relays);
   }
 
-  private init() {
+  private init(relays: Array<string>) {
+    const pool = new SimplePool();
+    relays.forEach(async(relay) => {
+      const r = await pool.ensureRelay(relay);
+      r.on('connect', () => {
+        console.log(`${r.url} connect successful`);
+      });
+      r.on('notice', (...arg: any[]) => {
+        console.log('notice', arg);
+      });
+    });
+    this.relayPool = pool;
+  }
 
+  getEventHash(event: Event) {
+    return getEventHash(event);
+  }
+
+  signEvent(event: Event, key: string) {
+    return signEvent(event, key);
+  }
+  async encrypt(senderPrivateKey: string, receiverPublicKey: string, message: string) {
+    return await nip04.encrypt(senderPrivateKey, receiverPublicKey, message);
+  }
+  async decrypt(privateKey: string, publicKey: string, content: string) {
+    return await nip04.decrypt(privateKey, publicKey, content);
   }
 
   // 1. 生成nostr的密钥对（账户）
   generateNostrKeyPair() {
     const privObject = noble.utils.randomPrivateKey();
-    // const pubObject = noble.getPublicKey(privObject);
     // Schnorr signatures
-    const rpub = noble.schnorr.getPublicKey(privObject);
+    const pubObject = noble.schnorr.getPublicKey(privObject);
     const privKey = ByteArrayToHexString(privObject);
-    const pubKey = ByteArrayToHexString(rpub);
+    const pubKey = ByteArrayToHexString(pubObject);
     return {
       PrivateKey: privKey,
       PublicKey: pubKey,
     };
   }
+
   // 2. 通过公钥生成address
-  async generateKeys(keys?: NostrKeyPairsType) {
-    let keypairs = keys;
-    // 若用户不传公私钥，则自动生成
-    if (!keypairs) {
-      const { PublicKey, PrivateKey } = this.generateNostrKeyPair();
-      keypairs = {
-        PublicKey,
-        PrivateKey
-      };
-    }
-    const { address } = this.web3.eth.accounts.privateKeyToAccount(`0x${keypairs.PrivateKey}`);
+  generateAddress(PrivateKey: string) {
+    const { address } = this.web3.eth.accounts.privateKeyToAccount(`0x${PrivateKey}`);
     return {
-      ...keypairs,
       did_value: address,
       did_type: 'nostr'
     };
@@ -113,4 +127,5 @@ export class Nostr {
       didType: 'nostr' as any
     });
   }
+
 }

@@ -68,6 +68,8 @@ const outputMap = [
       'js-sha256': 'js-sha256',
       starknet: 'starknet',
       qrcode: 'qrcode',
+      crypto: 'crypto',
+      util: 'util'
     },
   },
   // {
